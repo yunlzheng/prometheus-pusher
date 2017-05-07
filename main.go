@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"sort"
 	"github.com/prometheus/common/model"
+	"flag"
 )
 
 var cfg = struct {
@@ -19,9 +20,15 @@ type TargetPools struct {
 }
 
 func init() {
+	flag.StringVar(
+		&cfg.configFile, "config.file", "prometheus.yml",
+		"Prometheus configuration file name.",
+	)
 }
 
 func main() {
+
+	flag.Parse()
 
 	var (
 		sampleAppender = storage.Fanout{}
@@ -31,8 +38,7 @@ func main() {
 		targetManager = retrieval.NewTargetManager(sampleAppender)
 	)
 
-	cfg.configFile = "prometheus.yml"
-
+	fmt.Println("Loading prometheus config file: " + cfg.configFile)
 	conf, err := config.LoadFile(cfg.configFile)
 	if err != nil {
 		fmt.Println(err.Error())
