@@ -71,9 +71,8 @@ func main() {
 		}
 
 		for job, pool := range pools.pools {
-			fmt.Println("job %s", job)
 			for _, endpoint := range pool {
-				fmt.Println(endpoint, "<<<endpoint")
+				fmt.Print(fmt.Sprintf("job: %s endpoint: %s health: %s LastScrape: %s\n", job, endpoint.URL(), endpoint.Health(), endpoint.LastScrape()))
 			}
 		}
 
