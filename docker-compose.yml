@@ -1,0 +1,14 @@
+version: '2'
+services:
+  pusher:
+    image: wisecity/prometheus-pusher
+    volumes_from:
+    - conf
+    entrypoint:
+    - /bin/prometheus_pusher
+    - -config.file
+    - /etc/prom-conf/prometheus.yml
+  conf:
+    image: infinityworks/prom-conf:17
+    volumes:
+    - /etc/prom-conf/

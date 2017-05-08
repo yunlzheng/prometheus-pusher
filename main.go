@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/prometheus/common/model"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/prometheus/retrieval"
 	"github.com/prometheus/prometheus/storage"
 	"github.com/prometheus/prometheus/config"
 	"fmt"
 	"sort"
-	"github.com/prometheus/common/model"
 	"flag"
 )
 
@@ -15,8 +15,40 @@ var cfg = struct {
 	configFile string
 }{}
 
-type TargetPools struct {
-	pools map[string][]*retrieval.Target
+type JobTargets struct {
+	Targets []*JobTarget
+}
+
+type JobTarget struct {
+	Name      string
+	Endpoints []*JobEndpoint
+}
+
+type JobEndpoint struct {
+	Endpoint string
+	Health   string
+}
+
+func ToTargets(tps map[string][]*retrieval.Target) []*JobTarget {
+	targets := []*JobTarget{}
+	for job, pool := range tps {
+		targets = append(targets, &JobTarget{
+			Name: job,
+			Endpoints: covertToEndpoints(pool),
+		})
+	}
+	return targets
+}
+
+func covertToEndpoints(targets []*retrieval.Target) []*JobEndpoint {
+	endpoints := []*JobEndpoint{}
+	for _, endpoint := range targets {
+		endpoints = append(endpoints, &JobEndpoint{
+			Endpoint: endpoint.URL().String(),
+			Health: string(endpoint.Health()),
+		})
+	}
+	return endpoints
 }
 
 func init() {
@@ -59,32 +91,27 @@ func main() {
 	r.GET("/targets", func(c *gin.Context) {
 
 		tps := map[string][]*retrieval.Target{}
+		type AA struct {
+			Name string
+		}
 		for _, t := range targetManager.Targets() {
 			job := string(t.Labels()[model.JobLabel])
-			//fmt.Println(job, "<<<<<<<<", t)
 			tps[job] = append(tps[job], t)
 		}
 
 		for _, targets := range tps {
-			//fmt.Println(targets, "<<<< targets")
 			sort.Slice(targets, func(i, j int) bool {
 				return targets[i].Labels()[model.InstanceLabel] < targets[j].Labels()[model.InstanceLabel]
 			})
 		}
 
-		pools := &TargetPools{
-			pools: tps,
-		}
-
-		for job, pool := range pools.pools {
+		for job, pool := range tps {
 			for _, endpoint := range pool {
 				fmt.Print(fmt.Sprintf("job: %s endpoint: %s health: %s LastScrape: %s\n", job, endpoint.URL(), endpoint.Health(), endpoint.LastScrape()))
 			}
 		}
 
-		c.JSON(200, gin.H{
-			"pools":pools,
-		})
+		c.JSON(200, ToTargets(tps))
 
 	})
 	r.Run()
