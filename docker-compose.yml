@@ -2,6 +2,8 @@ version: '2'
 services:
   pusher:
     image: wisecity/prometheus-pusher
+    environment:
+      PUSH_GATEWAY: http://pushgateway.example.org:9091
     volumes_from:
     - conf
     entrypoint:
