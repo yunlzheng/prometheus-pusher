@@ -7,6 +7,8 @@ import (
 )
 
 func TestInstance(t *testing.T) {
-	instance := strings.Replace("192.168.0.01", ".", "-", -1)
-	fmt.Println(instance)
+	ip := strings.TrimLeft("http://192.168.0.01:8080", "http://")
+	instanceLabel := strings.Replace(ip, ".", "-", -1)
+	instanceLabel = strings.Replace(instanceLabel, ":", "-", -1)
+	fmt.Println(instanceLabel)
 }

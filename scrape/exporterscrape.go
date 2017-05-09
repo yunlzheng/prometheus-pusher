@@ -139,7 +139,7 @@ func (endpoint *jobEndpoint) scrape(jobName string) error {
 
 	for _, sample := range allSamples {
 		metric := fmt.Sprintf("%s %s\n", sample.Metric, sample.Value)
-		if strings.Contains(metric, "node_") || strings.Contains(metric, "container_") || strings.Contains(metric, "rancher_"){
+		if strings.Contains(metric, "node_") || strings.Contains(metric, "container_") || strings.Contains(metric, "rancher_") {
 			buffer.WriteString(metric)
 		}
 	}
@@ -172,7 +172,8 @@ type jobEndpoint struct {
 }
 
 func (je *jobEndpoint) instance() string {
-	return strings.Replace(je.Endpoint, ".", "-", -1)
+	endpoint := strings.TrimLeft(je.Endpoint, "http://")
+	return strings.Replace(strings.Replace(endpoint, ".", "-", -1), ":", "-", -1)
 }
 
 type ExporterScrape struct {
