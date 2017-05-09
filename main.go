@@ -16,7 +16,7 @@ var cfg = struct {
 
 func init() {
 	flag.StringVar(
-		&cfg.configFile, "config.file", "prometheus.yml",
+		&cfg.configFile, "config.file", "prometheus_pusher.yml",
 		"Prometheus configuration file name.",
 	)
 }

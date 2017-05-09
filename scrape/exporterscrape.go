@@ -13,8 +13,8 @@ import (
 	"io"
 	"bytes"
 	"strings"
-	"io/ioutil"
 	"os"
+	"io/ioutil"
 )
 
 var pushGateway string
@@ -86,10 +86,6 @@ var userAgentHeader = fmt.Sprintf("Prometheus/%s", version.Version)
 
 func (endpoint *jobEndpoint) scrape(jobName string) error {
 
-	if jobName!="HostsMetrics" {
-		return nil
-	}
-
 	req, err := http.NewRequest("GET", endpoint.Endpoint, nil)
 	if err != nil {
 		return err
@@ -143,12 +139,12 @@ func (endpoint *jobEndpoint) scrape(jobName string) error {
 
 	for _, sample := range allSamples {
 		metric := fmt.Sprintf("%s %s\n", sample.Metric, sample.Value)
-		if !strings.Contains(metric, "go_") && !strings.Contains(metric, "http_") {
+		if strings.Contains(metric, "node_") || strings.Contains(metric, "container_") {
 			buffer.WriteString(metric)
 		}
 	}
 
-	url := fmt.Sprintf("%s/metrics/job/%s", pushGateway, jobName)
+	url := fmt.Sprintf("%s/metrics/job/%s/instance/%s", pushGateway, jobName, jobName)
 	fmt.Println("send data to pushgateway :" + url)
 
 	post, err := http.NewRequest("POST", url, strings.NewReader(buffer.String()))

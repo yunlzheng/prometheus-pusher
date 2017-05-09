@@ -3,36 +3,16 @@ global:
   evaluation_interval: 15s
   external_labels:                                                              
       monitor: 'exporter-metrics'                                                
-                                                                                
+
 scrape_configs:
 
-- job_name: 'HostsMetrics'
+- job_name: 'push-metrics'
   dns_sd_configs:
   - names:
-    - node-exporter
+    - pushgateway
     refresh_interval: 15s
     type: A
     port: 9100
-
-- job_name: 'ContainerMetrics'
-  static_configs:
-    - targets:
-      - 'rancher-server:9108'
-- job_name: 'RancherServerMetrics'
-  dns_sd_configs:
-  - names:
-    - cadvisor
-    refresh_interval: 15s
-    type: A
-    port: 8080
-
-- job_name: 'RancherApi'
-  dns_sd_configs:
-  - names:
-    - 'prometheus-rancher-exporter'
-    refresh_interval: 15s
-    type: A
-    port: 9173
 
 - job_name: 'Prometheus'
   static_configs:
