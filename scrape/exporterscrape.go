@@ -139,7 +139,7 @@ func (endpoint *jobEndpoint) scrape(jobName string) error {
 
 	for _, sample := range allSamples {
 		metric := fmt.Sprintf("%s %s\n", sample.Metric, sample.Value)
-		if strings.Contains(metric, "node_") || strings.Contains(metric, "container_") {
+		if strings.Contains(metric, "node_") || strings.Contains(metric, "container_") || strings.Contains(metric, "rancher_"){
 			buffer.WriteString(metric)
 		}
 	}
