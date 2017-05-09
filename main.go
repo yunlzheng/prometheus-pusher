@@ -1,14 +1,12 @@
 package main
 
 import (
-	pusher "github.com/yunlzheng/prometheus-pusher/model"
-	"github.com/prometheus/common/model"
+	"github.com/yunlzheng/prometheus-pusher/scrape"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/prometheus/retrieval"
 	"github.com/prometheus/prometheus/storage"
 	"github.com/prometheus/prometheus/config"
 	"fmt"
-	"sort"
 	"flag"
 )
 
@@ -35,6 +33,15 @@ func main() {
 		targetManager = retrieval.NewTargetManager(sampleAppender)
 	)
 
+	var (
+		jobTargets = scrape.NewJobTargets(targetManager)
+	)
+
+	var (
+		scrapeManager = scrape.NewExporterScrape(jobTargets)
+	)
+
+
 	fmt.Println("Loading prometheus config file: " + cfg.configFile)
 	conf, err := config.LoadFile(cfg.configFile)
 	if err != nil {
@@ -47,6 +54,11 @@ func main() {
 	go targetManager.Run()
 	defer targetManager.Stop()
 
+	scrapeManager.AppConfig(conf)
+
+	go scrapeManager.Run()
+	defer scrapeManager.Stop()
+
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -54,30 +66,7 @@ func main() {
 		})
 	})
 	r.GET("/targets", func(c *gin.Context) {
-
-		tps := map[string][]*retrieval.Target{}
-		type AA struct {
-			Name string
-		}
-		for _, t := range targetManager.Targets() {
-			job := string(t.Labels()[model.JobLabel])
-			tps[job] = append(tps[job], t)
-		}
-
-		for _, targets := range tps {
-			sort.Slice(targets, func(i, j int) bool {
-				return targets[i].Labels()[model.InstanceLabel] < targets[j].Labels()[model.InstanceLabel]
-			})
-		}
-
-		for job, pool := range tps {
-			for _, endpoint := range pool {
-				fmt.Print(fmt.Sprintf("job: %s endpoint: %s health: %s LastScrape: %s\n", job, endpoint.URL(), endpoint.Health(), endpoint.LastScrape()))
-			}
-		}
-
-		c.JSON(200, pusher.ToTargets(tps))
-
+		c.JSON(200, jobTargets.Targets())
 	})
 	r.Run()
 
