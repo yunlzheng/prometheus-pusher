@@ -1,6 +1,7 @@
 package main
 
 import (
+	pusher "github.com/yunlzheng/prometheus-pusher/model"
 	"github.com/prometheus/common/model"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/prometheus/retrieval"
@@ -14,42 +15,6 @@ import (
 var cfg = struct {
 	configFile string
 }{}
-
-type JobTargets struct {
-	Targets []*JobTarget
-}
-
-type JobTarget struct {
-	Name      string
-	Endpoints []*JobEndpoint
-}
-
-type JobEndpoint struct {
-	Endpoint string
-	Health   string
-}
-
-func ToTargets(tps map[string][]*retrieval.Target) []*JobTarget {
-	targets := []*JobTarget{}
-	for job, pool := range tps {
-		targets = append(targets, &JobTarget{
-			Name: job,
-			Endpoints: covertToEndpoints(pool),
-		})
-	}
-	return targets
-}
-
-func covertToEndpoints(targets []*retrieval.Target) []*JobEndpoint {
-	endpoints := []*JobEndpoint{}
-	for _, endpoint := range targets {
-		endpoints = append(endpoints, &JobEndpoint{
-			Endpoint: endpoint.URL().String(),
-			Health: string(endpoint.Health()),
-		})
-	}
-	return endpoints
-}
 
 func init() {
 	flag.StringVar(
@@ -111,7 +76,7 @@ func main() {
 			}
 		}
 
-		c.JSON(200, ToTargets(tps))
+		c.JSON(200, pusher.ToTargets(tps))
 
 	})
 	r.Run()
