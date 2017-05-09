@@ -86,6 +86,10 @@ var userAgentHeader = fmt.Sprintf("Prometheus/%s", version.Version)
 
 func (endpoint *jobEndpoint) scrape(jobName string) error {
 
+	if jobName!="HostsMetrics" {
+		return nil
+	}
+
 	req, err := http.NewRequest("GET", endpoint.Endpoint, nil)
 	if err != nil {
 		return err

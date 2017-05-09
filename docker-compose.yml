@@ -1,6 +1,6 @@
 version: '2'
 services:
-  pusher:
+  prometheus-pusher:
     image: wisecity/prometheus-pusher
     environment:
       PUSH_GATEWAY: http://pushgateway.example.org:9091
