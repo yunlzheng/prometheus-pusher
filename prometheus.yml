@@ -12,7 +12,7 @@ scrape_configs:
     - pushgateway
     refresh_interval: 15s
     type: A
-    port: 9100
+    port: 9091
 
 - job_name: 'Prometheus'
   static_configs:
