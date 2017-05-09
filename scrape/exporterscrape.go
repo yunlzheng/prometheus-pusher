@@ -172,8 +172,7 @@ type jobEndpoint struct {
 }
 
 func (je *jobEndpoint) instance() string {
-	endpoint := strings.TrimLeft(je.Endpoint, "http://")
-	return strings.Replace(strings.Replace(endpoint, ".", "-", -1), ":", "-", -1)
+	return strings.Replace(strings.Replace(strings.Replace(strings.TrimLeft(je.Endpoint, "http://"), "/", "-", -1), ".", "-", -1), ":", "-", -1)
 }
 
 type ExporterScrape struct {
