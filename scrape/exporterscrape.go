@@ -144,7 +144,7 @@ func (endpoint *jobEndpoint) scrape(jobName string) error {
 		}
 	}
 
-	url := fmt.Sprintf("%s/metrics/job/%s/instance/%s", pushGateway, jobName, jobName)
+	url := fmt.Sprintf("%s/metrics/job/%s/instance/%s", pushGateway, jobName, endpoint.instance())
 	fmt.Println("send data to pushgateway :" + url)
 
 	post, err := http.NewRequest("POST", url, strings.NewReader(buffer.String()))
@@ -169,6 +169,10 @@ func (endpoint *jobEndpoint) scrape(jobName string) error {
 type jobEndpoint struct {
 	Endpoint string
 	Health   string
+}
+
+func (je *jobEndpoint) instance() string {
+	return strings.Replace(je.Endpoint, ".", "-", -1)
 }
 
 type ExporterScrape struct {

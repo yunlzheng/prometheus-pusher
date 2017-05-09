@@ -13,8 +13,3 @@ scrape_configs:
     refresh_interval: 15s
     type: A
     port: 9091
-
-- job_name: 'Prometheus'
-  static_configs:
-    - targets:
-      - '127.0.0.1:9090'
