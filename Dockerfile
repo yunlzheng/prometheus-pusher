@@ -10,4 +10,7 @@ COPY . /go/src/github.com/yunlzheng/prometheus-pusher
   && GOPATH=/go go build -o /bin/prometheus_pusher \
   && rm -rf /go/bin /go/pkg /var/cache/apk/*
 
-ENTRYPOINT [ "/bin/prometheus_pusher" ]
+ADD entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT [ "./entrypoint.sh" ]
