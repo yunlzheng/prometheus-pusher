@@ -10,6 +10,7 @@ collection prometheus data and push to pushgateway
 
 * Support Prometheus Config File
 * Support Prometheus Service Discovery
+* Support Custom Label
 
 ## How To Use
 
@@ -77,6 +78,4 @@ services:
     - -config.file
     - /etc/prom-conf/prometheus.yml
 ```
-
-
 

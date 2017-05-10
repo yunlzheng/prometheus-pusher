@@ -72,10 +72,10 @@ type jobTarget struct {
 	Endpoints []*jobEndpoint
 }
 
-func (jt *jobTarget) Scrape() {
+func (jt *jobTarget) Scrape(labels []string, values []string) {
 	for _, endpoint := range jt.Endpoints {
 		go func(endpoint *jobEndpoint) {
-			endpoint.scrape(jt.Name)
+			endpoint.scrape(jt.Name, labels, values)
 		}(endpoint)
 	}
 }
@@ -84,7 +84,7 @@ const acceptHeader = `application/vnd.google.protobuf;proto=io.prometheus.client
 
 var userAgentHeader = fmt.Sprintf("Prometheus/%s", version.Version)
 
-func (endpoint *jobEndpoint) scrape(jobName string) error {
+func (endpoint *jobEndpoint) scrape(jobName string, labels []string, values []string) error {
 
 	req, err := http.NewRequest("GET", endpoint.Endpoint, nil)
 	if err != nil {
@@ -138,10 +138,22 @@ func (endpoint *jobEndpoint) scrape(jobName string) error {
 	var buffer bytes.Buffer
 
 	for _, sample := range allSamples {
+		// Add Custom Metrics, This will overwrite the metrics label value
+		for i, customLabel := range labels {
+			sample.Metric[model.LabelName(customLabel)] = model.LabelValue(values[i])
+		}
+
 		metric := fmt.Sprintf("%s %s\n", sample.Metric, sample.Value)
+
+		fmt.Println(metric)
 		if strings.Contains(metric, "node_") || strings.Contains(metric, "container_") || strings.Contains(metric, "rancher_") {
 			buffer.WriteString(metric)
 		}
+	}
+
+	if true {
+		//fmt.Println(buffer.String())
+		return nil
 	}
 
 	url := fmt.Sprintf("%s/metrics/job/%s/instance/%s", pushGateway, jobName, endpoint.instance())
@@ -180,13 +192,17 @@ type ExporterScrape struct {
 	ticker         *time.Ticker
 	quit           chan struct{}
 	ScrapeInterval model.Duration
+	labels         []string
+	values         []string
 }
 
-func NewExporterScrape(jt *JobTargets) *ExporterScrape {
+func NewExporterScrape(jt *JobTargets, labels []string, values []string) *ExporterScrape {
 	return &ExporterScrape{
 		jt: jt,
 		ticker: time.NewTicker(time.Second * 15),
 		quit: make(chan struct{}),
+		labels: labels,
+		values: values,
 	}
 }
 
@@ -196,7 +212,7 @@ func (es *ExporterScrape) Run() {
 			select {
 			case <-es.ticker.C:
 				for _, jt := range es.jt.Targets() {
-					jt.Scrape()
+					jt.Scrape(es.labels, es.values)
 				}
 			case <-es.quit:
 				es.ticker.Stop()
