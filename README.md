@@ -93,6 +93,10 @@ In some case, if you want add external metrics key for the origin metrics data. 
 In our case, we collection container data from mutil rancher environment with cadvistor. 
 We want the prometheus query express can precise positioning the container from different environment. So we add rancher environment uuid as the custom label.
 
+```
+-config.customLabels=environmentUUID -config.customLabelValues=$(curl http://rancher-metadata/latest/self/host/environment_uuid)
+```
+
 > Note. customLabel will overwrite the origin metrics label
 
 ```
