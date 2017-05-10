@@ -32,17 +32,6 @@ func init() {
 	flag.StringVar(
 		&cfg.customLabelValues, "config.customLabelValues", "", "custom mertics label values",
 	)
-
-	if cfg.customLabels=="" {
-		labels = []string{}
-		values = []string{}
-	} else {
-		labels = strings.Split(cfg.customLabels, ",")
-		values = strings.Split(cfg.customLabelValues, ",")
-	}
-
-
-
 }
 
 func main() {
@@ -51,22 +40,25 @@ func main() {
 
 	var (
 		sampleAppender = storage.Fanout{}
-	)
-
-	var (
 		targetManager = retrieval.NewTargetManager(sampleAppender)
-	)
-
-	var (
 		jobTargets = scrape.NewJobTargets(targetManager)
 	)
+
+	fmt.Println("Loading prometheus config file: " + cfg.configFile)
+	fmt.Println("Custom labels: " + cfg.customLabels + "\t Custom label values: " + cfg.customLabelValues)
+
+	if cfg.customLabels == "" {
+		labels = []string{}
+		values = []string{}
+	} else {
+		labels = strings.Split(cfg.customLabels, ",")
+		values = strings.Split(cfg.customLabelValues, ",")
+	}
 
 	var (
 		scrapeManager = scrape.NewExporterScrape(jobTargets, labels, values)
 	)
 
-	fmt.Println("Loading prometheus config file: " + cfg.configFile)
-	fmt.Println("Custom labels: " + cfg.customLabels + "\t Custom label values: " + cfg.customLabelValues)
 	conf, err := config.LoadFile(cfg.configFile)
 	if err != nil {
 		fmt.Println(err.Error())

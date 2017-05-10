@@ -138,7 +138,6 @@ func (endpoint *jobEndpoint) scrape(jobName string, labels []string, values []st
 	var buffer bytes.Buffer
 
 	for _, sample := range allSamples {
-		// Add Custom Metrics, This will overwrite the metrics label value
 		for i, customLabel := range labels {
 			sample.Metric[model.LabelName(customLabel)] = model.LabelValue(values[i])
 		}
