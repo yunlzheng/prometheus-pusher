@@ -151,11 +151,6 @@ func (endpoint *jobEndpoint) scrape(jobName string, labels []string, values []st
 		}
 	}
 
-	if true {
-		//fmt.Println(buffer.String())
-		return nil
-	}
-
 	url := fmt.Sprintf("%s/metrics/job/%s/instance/%s", pushGateway, jobName, endpoint.instance())
 	fmt.Println("send data to pushgateway :" + url)
 
