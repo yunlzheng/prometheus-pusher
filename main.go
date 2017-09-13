@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/yunlzheng/prometheus-pusher/scrape"
+	"flag"
+	"fmt"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/prometheus/config"
 	"github.com/prometheus/prometheus/retrieval"
 	"github.com/prometheus/prometheus/storage"
-	"github.com/prometheus/prometheus/config"
-	"fmt"
-	"flag"
+	"github.com/yunlzheng/prometheus-pusher/scrape"
 	"strings"
 )
 
@@ -40,8 +41,8 @@ func main() {
 
 	var (
 		sampleAppender = storage.Fanout{}
-		targetManager = retrieval.NewTargetManager(sampleAppender)
-		jobTargets = scrape.NewJobTargets(targetManager)
+		targetManager  = retrieval.NewTargetManager(sampleAppender)
+		jobTargets     = scrape.NewJobTargets(targetManager)
 	)
 
 	fmt.Println("Loading prometheus config file: " + cfg.configFile)
@@ -76,6 +77,8 @@ func main() {
 	defer scrapeManager.Stop()
 
 	r := gin.Default()
+	pprof.Register(r, nil) // NOQA
+
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
@@ -87,4 +90,3 @@ func main() {
 	r.Run()
 
 }
-
